@@ -1,0 +1,12 @@
+#! /bin/sh
+#
+db=`ffmpeg -i $1 -vn -af volumedetect -f null - 2>&1 | grep "max_volume" | sed -e "s/^\[.*\] max_volume: //g" | sed -e "s/ dB//g"`
+chk=$(echo "if( $db >= 0 ) 1 else 0" | bc)
+if [ $chk -eq 1 ]; then
+  gain="-"`echo $db`
+else
+  gain=`echo $db | sed -e "s/\-//g"`
+fi
+echo $gain
+ffmpeg -i $1 -af volume=$gain"dB" $2
+
